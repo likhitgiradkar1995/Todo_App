@@ -5,38 +5,49 @@ function UserTask(props) {
     const [posts, setPosts] = useState([])
     const [task, setTask] = useState({ title: '', description: '', userId: '' })
     const [updateFlag, setUpdateFlag] = useState(false)
-    const [taskId,setTaskId]=useState('');
+    const [taskId, setTaskId] = useState('');
+    const [userId, setuserId] = useState('')
 
     useEffect(() => {
-        console.log("props location user id",props.location.state);
+        console.log("props location user id", props.location.state);
+        setuserId(props.location.state);
+        getTasks(props.location.state);
+    }, [])
 
-        axios.get(`http://localhost:1337/user/${props.location.state}`)
+    const getTasks = (uid) => {
+        axios.get(`http://localhost:1337/user/${uid}`)
             .then(res => {
-                console.log(res.data)
-                setPosts(res.data)
+                console.log("task array", res.data.tasks)
+                setPosts(res.data.tasks)
                 //setUser({userId:'5fceeaa034b00e26801c44a7'})
             })
             .catch(err => {
                 console.log(err)
             })
-    }, [task])
-
+    }
+    const clearFields = () => {
+        task.title = '';
+        task.description = '';
+    }
     const addUser = (e) => {
         //alert(user.description);
-        //e.preventDefault();
-        console.log("update flag >>",updateFlag)
-        if(updateFlag)
-        {
-         axios.put(`http://localhost:1337/task/${taskId}`,{title:task.title,description:task.description})
-         .then(res=>{
-             console.log("update task res",res.data);
-         })
-        }else{
+        e.preventDefault();
+        console.log("update flag >>", updateFlag)
+        if (updateFlag) {
+            axios.put(`http://localhost:1337/task/${taskId}`, { title: task.title, description: task.description })
+                .then(res => {
+                    console.log("update task res", res.data);
+                    clearFields();
+                    getTasks(userId);
+                })
+        } else {
             console.log("task", task);
-            axios.post(`http://localhost:1337/addTask`, { title:task.title,description:task.description,userId:task.userId })
+            axios.post(`http://localhost:1337/addTask`, { title: task.title, description: task.description, userId: userId })
                 .then(res => {
                     console.log("add task res", res);
                     console.log(res.data);
+                    clearFields();
+                    getTasks(userId);
                 })
         }
     }
@@ -47,6 +58,8 @@ function UserTask(props) {
             .then(res => {
                 console.log("delete task res", res);
                 console.log(res.data);
+                clearFields();
+                getTasks(userId);
             })
     }
 
@@ -89,19 +102,19 @@ function UserTask(props) {
                 </thead>
                 <tbody>
                     {
-                        posts.map(post =>
-                            post.tasks.map(p =>
-                                <tr>
-                                    <td>{p.title} </td>
-                                    <td>{p.description}</td>
-                                    <td>
-                                        <button onClick={() => btnEditclick(p)}>Edit</button>
-                                    </td>
-                                    <td>
-                                        <button onClick={() => btnDeleteclick(p.id)}>Delete</button>
-                                    </td>
-                                </tr>
-                            )
+                        posts.map(p =>
+
+                            <tr>
+                                <td>{p.title} </td>
+                                <td>{p.description}</td>
+                                <td>
+                                    <button onClick={() => btnEditclick(p)}>Edit</button>
+                                </td>
+                                <td>
+                                    <button onClick={() => btnDeleteclick(p.id)}>Delete</button>
+                                </td>
+                            </tr>
+
                             // <tr>
                             //     <td>{post.tasks.title} </td>
                             //     <td>{post.tasks.description}</td>
